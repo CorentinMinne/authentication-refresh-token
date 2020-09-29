@@ -19,16 +19,16 @@ export default (options = {}): Hook => {
     const { user } = result;
 
     if (!config) throw new Error("Refresh Token configuration is missing");
-    ["service", "entity", "clientIdField"].forEach(prop => {
+    ["service", "entity", "clientIdField", "userIdField"].forEach(prop => {
       if (prop in config) return;
       throw new Error(`Prop '${prop}' is missing from configuration`);
     });
 
-    const { entity, clientIdField } = config;
+    const { entity, clientIdField, userIdField } = config;
     const entityService = app.service(config.service);
     const existingToken = await entityService.find({
       query: {
-        [clientIdField]: typeof user.id === "number" ? `${user.id}` : user.id
+        [clientIdField]: typeof user[userIdField] === "number" ? `${user[userIdField]}` : user[userIdField]
       }
     });
 
@@ -40,7 +40,7 @@ export default (options = {}): Hook => {
 
     const token = await entityService.create({
       [entity]: UUIDV4(),
-      [clientIdField]: user.id
+      [clientIdField]: user[userIdField]
     });
 
     Object.assign(result, { [entity]: token[entity] });
